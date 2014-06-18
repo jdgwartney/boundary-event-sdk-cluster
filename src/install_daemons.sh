@@ -10,16 +10,17 @@ echo "Installing required software"
 sudo apt-get install -y sysv-rc-conf
 
 replaceDaemon() {
-  typeset -r value=$1
-  sed -e"s/@@DAEMON@@/$value/g"
+  typeset -r name=$1
+  typeset -r port=$2
+  sed -e"s/@@DAEMON@@/$name/g" | sed -e"s/@@PORT@@/$port/g" 
 }
 
 echo "Copy scripts to init.d"
-cat $PROVISION_DIR/src/scripts/daemon-template.sh | replaceDaemon plumgrid > /etc/init.d/plumgrid
+cat $PROVISION_DIR/src/scripts/daemon-template.sh | replaceDaemon plumgrid 10010 > /etc/init.d/plumgrid
 chmod 774 /etc/init.d/plumgrid
-cat $PROVISION_DIR/src/scripts/daemon-template.sh | replaceDaemon plumgrid-sal > /etc/init.d/plumgrid-sal
+cat $PROVISION_DIR/src/scripts/daemon-template.sh | replaceDaemon plumgrid-sal 10011 > /etc/init.d/plumgrid-sal
 chmod 774 /etc/init.d/plumgrid-sal
-cat $PROVISION_DIR/src/scripts/daemon-template.sh | replaceDaemon nginx > /etc/init.d/nginx
+cat $PROVISION_DIR/src/scripts/daemon-template.sh | replaceDaemon nginx 10012 > /etc/init.d/nginx
 chmod 774 /etc/init.d/nginx
 
 echo "Register daemons to autostart"

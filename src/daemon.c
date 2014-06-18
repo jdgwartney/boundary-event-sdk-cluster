@@ -6,6 +6,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <libgen.h>
 
 #define DAEMON_NAME "simpledaemon"
 
@@ -14,6 +17,7 @@
     void daemonize(char *rundir, char *pidfile);
 
     int pidFilehandle;
+    int listeningPort = 0;
 
     void signal_handler(int sig)
     {
@@ -143,8 +147,59 @@
         write(pidFilehandle, str, strlen(str));
     }
 
-    int main()
+    processLoop() {
+        int listenfd,connfd,n;
+        struct sockaddr_in servaddr,cliaddr;
+        socklen_t clilen;
+        pid_t     childpid;
+        char mesg[1000];
+
+        listenfd=socket(AF_INET,SOCK_STREAM,0);
+
+        bzero(&servaddr,sizeof(servaddr));
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
+        servaddr.sin_port=htons(listeningPort);
+        bind(listenfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
+
+        listen(listenfd,1024);
+
+        for(;;)
+        {
+            clilen=sizeof(cliaddr);
+            connfd = accept(listenfd,(struct sockaddr *)&cliaddr,&clilen);
+
+            if ((childpid = fork()) == 0)
+            {
+                close (listenfd);
+
+                for(;;)
+                {
+                    n = recvfrom(connfd,mesg,1000,0,(struct sockaddr *)&cliaddr,&clilen);
+                    sendto(connfd,mesg,n,0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
+                    printf("-------------------------------------------------------\n");
+                    mesg[n] = 0;
+                    printf("Received the following:\n");
+                    printf("%s",mesg);
+                    printf("-------------------------------------------------------\n");
+                }
+         
+            }
+            close(connfd);
+        }
+    }
+
+    int main(int argc, char * argv[])
     {
+        if (argc != 2)
+        {
+            /*fprintf(stderr,"argc: %d\n",argc);*/
+            fprintf(stderr,"usage: %s <port>\n",basename(argv[0]));
+            exit(0);
+        }
+
+        listeningPort = atoi(argv[1]);
+
         /* Debug logging
         setlogmask(LOG_UPTO(LOG_DEBUG));
         openlog(DAEMON_NAME, LOG_CONS, LOG_USER);
@@ -164,7 +219,10 @@
         while (1)
         {
             syslog(LOG_INFO, "daemon says hello");
-
+            processLoop();
+/*
             sleep(1);
+*/
         }
+        return 0;
     }

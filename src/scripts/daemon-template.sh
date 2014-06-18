@@ -7,7 +7,8 @@
 DAEMON_PATH="/bin"
 
 DAEMON=@@DAEMON@@
-DAEMONOPTS="-my opts"
+LISTENING_PORT=@@PORT@@
+DAEMONOPTS="$LISTENING_PORT"
 
 NAME=@@DAEMON@@
 DESC="My daemon description"

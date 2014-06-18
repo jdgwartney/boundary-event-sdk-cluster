@@ -14,7 +14,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define "api" do |api|
     api.vm.provision :shell, path: "api_provision.sh"
-    db.vm.network "private_network", ip: "192.168.33.11"
+#    api.vm.network "private_network", ip: "192.168.33.11"
+    api.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)"
+    api.vm.network "forwarded_port", guest: 10010, host: 10010
   end
 
   config.vm.define "db" do |db|
@@ -24,17 +26,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define "sdk" do |sdk|
     sdk.vm.provision :shell, path: "sdk_provision.sh"
-    db.vm.network "private_network", ip: "192.168.33.13"
+    sdk.vm.network "private_network", ip: "192.168.33.13"
   end
 
   config.vm.define "web" do |web|
     web.vm.provision :shell, path: "web_provision.sh"
-    db.vm.network "private_network", ip: "192.168.33.14"
+    web.vm.network "private_network", ip: "192.168.33.14"
   end
 
-  config.vm.define "sdn" do |web|
-    web.vm.provision :shell, path: "sdn_provision.sh"
-    db.vm.network "private_network", ip: "192.168.33.15"
+  config.vm.define "sdn" do |sdn|
+    sdn.vm.provision :shell, path: "sdn_provision.sh"
+    sdn.vm.network "private_network", ip: "192.168.33.15"
   end
 
   # The url from where the 'config.vm.box' box will be fetched if it
