@@ -4,12 +4,12 @@
 # description: myapp daemon
 # processname: myapp
 
-DAEMON_PATH="/bin/plumgrid"
+DAEMON_PATH="/bin"
 
-DAEMON=plumgrid
+DAEMON=@@DAEMON@@
 DAEMONOPTS="-my opts"
 
-NAME=plumgrid
+NAME=@@DAEMON@@
 DESC="My daemon description"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME

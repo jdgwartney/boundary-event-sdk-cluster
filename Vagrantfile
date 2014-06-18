@@ -13,22 +13,28 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "hashicorp/precise64"
 
   config.vm.define "api" do |api|
-#    api.vm.forward_port 443, 8443
     api.vm.provision :shell, path: "api_provision.sh"
+    db.vm.network "private_network", ip: "192.168.33.11"
   end
 
   config.vm.define "db" do |db|
     db.vm.provision :shell, path: "db_provision.sh"
-    db.vm.network "private_network", ip: "192.168.33.11"
+    db.vm.network "private_network", ip: "192.168.33.12"
   end
 
   config.vm.define "sdk" do |sdk|
     sdk.vm.provision :shell, path: "sdk_provision.sh"
+    db.vm.network "private_network", ip: "192.168.33.13"
   end
 
   config.vm.define "web" do |web|
     web.vm.provision :shell, path: "web_provision.sh"
-#    web.vm.forward_port 80, 8080
+    db.vm.network "private_network", ip: "192.168.33.14"
+  end
+
+  config.vm.define "sdn" do |web|
+    web.vm.provision :shell, path: "sdn_provision.sh"
+    db.vm.network "private_network", ip: "192.168.33.15"
   end
 
   # The url from where the 'config.vm.box' box will be fetched if it

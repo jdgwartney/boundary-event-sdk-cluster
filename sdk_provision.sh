@@ -10,4 +10,4 @@ sudo apt-get install -y git sysv-rc-conf
 #git clone https://github.com/boundary/boundary-event-sdk.git
 #chown -R vagrant:vagrant boundary-event-sdk
 
-source src/install_daemons.sh
+source /vagrant/src/install_daemons.sh
