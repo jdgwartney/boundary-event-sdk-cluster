@@ -23,6 +23,7 @@ typedef struct Configuration CONFIG;
 
 
 CONFIG configuration;
+char * configFilePath = NULL;
 
     void daemonShutdown();
     void signal_handler(int sig);
@@ -203,6 +204,12 @@ CONFIG configuration;
         }
     }
 
+    void usage(char * programName)
+    {
+        fprintf(stderr,"usage: %s -f config_file\n",programName);
+        exit(0);
+    }
+
     int getKeyValuePair(char *line,char *key,char *value)
     {
         char * lKey;
@@ -239,12 +246,10 @@ CONFIG configuration;
         return result;
     }
 
-    int loadConfiguration(char * name,CONFIG * config)
+    int loadConfiguration(char * filePath,CONFIG * config)
     {
       FILE *fp = NULL;
-      char filePath[PATH_MAX+1];
       struct stat fileStat;
-      sprintf(filePath,"/etc/%s",name);
       char line[MAX_CANON+1];
       int result = 0;
 
@@ -267,7 +272,7 @@ CONFIG configuration;
       }
       else 
       {
-         fprintf (stderr, "%s: Couldn't open file %s; %s\n",name,filePath, strerror (errno));
+         fprintf (stderr, "Couldn't open file %s; %s\n",filePath, strerror (errno));
          result = errno;
       }
       if (fp)
@@ -284,20 +289,18 @@ CONFIG configuration;
        char * cvalue = NULL;
        char c;
        int index = 0;
+       int result = 1;
 
        opterr = 0;
 
-       while ((c = getopt (argc, argv, "abc:")) != -1)
+       while ((c = getopt (argc, argv, "hf:")) != -1)
          switch (c)
            {
-           case 'a':
-             aflag = 1;
+           case 'h':
+             usage(basename(argv[0]));
              break;
-           case 'b':
-             bflag = 1;
-             break;
-           case 'c':
-             cvalue = optarg;
+           case 'f':
+             configFilePath = optarg;
              break;
            case '?':
              if (optopt == 'c')
@@ -319,15 +322,14 @@ CONFIG configuration;
            /*printf ("Non-option argument %s\n", argv[index]); */
        }
 
-       return 0;
+       if (configFilePath)
+       {
+          result = 0;
+       }
+
+       return result;
     }
     
-    void usage(char * programName)
-    {
-        fprintf(stderr,"usage: %s <port>\n",programName);
-        exit(0);
-    }
-
     int main(int argc, char * argv[])
     {
         char * programName = basename(argv[0]);
@@ -337,7 +339,8 @@ CONFIG configuration;
             usage(programName);
         }
 
-	result = loadConfiguration(programName,&configuration);
+        fprintf(stdout,"file path: %s\n",configFilePath);
+	result = loadConfiguration(configFilePath,&configuration);
 	if (result)
         {
            exit(result);
